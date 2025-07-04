@@ -17,9 +17,9 @@ jobs:
       with:
         node-version: '20'
 
-    # 如果你沒有 package.json，可以刪除這一步
-    - name: Install dependencies
-      run: npm install
+    # 如果你沒有 package.json，這步刪掉或註解
+    # - name: Install dependencies
+    #   run: npm install
 
     - name: Run update script
       run: node scripts/fetch_scores.js
