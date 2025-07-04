@@ -2,7 +2,7 @@ name: Daily Sports Update
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 每天 UTC 時間 01:00 執行
+    - cron: '0 1 * * *'  # 每天 UTC 時間 01:00 執行
   workflow_dispatch:
 
 jobs:
