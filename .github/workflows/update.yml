@@ -1,43 +1,32 @@
-name: Daily Sports Update
+- name: Commit and push changes
+  run: |
+    set -x  # 打開執行指令回顯，方便看詳細執行流程
 
-on:
-  schedule:
-    - cron: '0 1 * * *'  # 每天 UTC 01:00 執行
-  workflow_dispatch:
+    git config user.name "github-actions"
+    git config user.email "actions@github.com"
 
-jobs:
-  update:
-    runs-on: ubuntu-latest
+    echo "本地分支狀態:"
+    git branch -a
 
-    steps:
-    - uses: actions/checkout@v3
+    echo "遠端分支狀態:"
+    git ls-remote
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
+    echo "fetch 遠端 main 分支"
+    git fetch origin main
 
-    # 如果沒有 package.json 就刪除或註解這步
-    # - name: Install dependencies
-    #   run: npm install
+    echo "強制切換本地 main 分支指向遠端 main"
+    git checkout -B main origin/main
 
-    - name: Run update script
-      run: node scripts/fetch_scores.js
+    git add index.html
+    git status
+    git diff --cached
 
-    - name: Commit and push changes
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git fetch origin main
-        git checkout -B main origin/main
-        git add index.html
-        git status
-        git diff --cached
-        if git diff --cached --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update scores $(date +'%Y-%m-%d')"
-          git push origin main --force
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    if git diff --cached --quiet; then
+      echo "無需提交的變更"
+    else
+      git commit -m "更新賽事 $(date +'%Y-%m-%d')"
+      echo "推送更新到遠端 main"
+      git push origin main --force
+    fi
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
