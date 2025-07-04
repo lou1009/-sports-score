@@ -17,7 +17,7 @@ jobs:
       with:
         node-version: '20'
 
-    # 如果你沒有 package.json，這步刪掉或註解
+    # 移除安裝步驟，無 package.json 不需要
     # - name: Install dependencies
     #   run: npm install
 
@@ -35,7 +35,7 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "Update scores $(date +'%Y-%m-%d')"
-          git push
+          git push origin HEAD:main --force
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
