@@ -1,34 +1,41 @@
-const fs = require('fs');
+import fs from 'fs';
+import fetch from 'node-fetch';
 
-// 模擬賽事資料
-const games = [
-  { home: '湖人', homeLogo: 'https://upload.wikimedia.org/wikipedia/en/0/03/Los_Angeles_Lakers_logo.svg', homeScore: 101, away: '勇士', awayLogo: 'https://upload.wikimedia.org/wikipedia/en/0/06/Golden_State_Warriors_logo.svg', awayScore: 98 },
-  { home: '熱火', homeLogo: 'https://upload.wikimedia.org/wikipedia/en/f/fb/Miami_Heat_logo.svg', homeScore: 90, away: '公鹿', awayLogo: 'https://upload.wikimedia.org/wikipedia/en/4/4a/Milwaukee_Bucks_logo.svg', awayScore: 95 },
-];
+async function fetchScores() {
+  // 你可以改成實際 API 來抓，這是示範用 ESPN MLB 賽事頁面
+  const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard');
+  const data = await res.json();
 
-// 產生 HTML 內容
-let html = `<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-<meta charset="UTF-8" />
-<title>每日運動賽事戰績</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .game { margin-bottom: 15px; }
-  img { vertical-align: middle; width: 24px; height: 24px; }
-</style>
-</head>
-<body>
-<h1>${new Date().toISOString().split('T')[0]} 運動賽事戰績</h1>
-`;
+  // 假設只取第一場比賽示範
+  const game = data.events[0].competitions[0];
 
-games.forEach(g => {
-  html += `<div class="game">
-    <img src="${g.homeLogo}" alt="${g.home}" /> ${g.home} ${g.homeScore} - ${g.awayScore} ${g.away}
-  </div>`;
+  const home = game.competitors.find(c => c.homeAway === 'home');
+  const away = game.competitors.find(c => c.homeAway === 'away');
+
+  const html = `<!DOCTYPE html>
+  <html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>每日運動賽事戰績</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      .game { margin-bottom: 15px; }
+      img { vertical-align: middle; width: 24px; height: 24px; }
+    </style>
+  </head>
+  <body>
+    <h1>${new Date().toISOString().split('T')[0]} MLB 賽事戰績</h1>
+    <div class="game">
+      <img src="${home.team.logo}" alt="${home.team.displayName}" /> ${home.team.displayName} ${home.score} - ${away.score} ${away.team.displayName} <img src="${away.team.logo}" alt="${away.team.displayName}" />
+    </div>
+  </body>
+  </html>`;
+
+  fs.writeFileSync('index.html', html);
+  console.log('index.html 已更新');
+}
+
+fetchScores().catch(err => {
+  console.error('抓取賽事失敗:', err);
+  process.exit(1);
 });
-
-html += `</body></html>`;
-
-fs.writeFileSync('index.html', html);
-console.log('index.html 已更新');
