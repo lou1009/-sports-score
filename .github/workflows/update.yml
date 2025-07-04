@@ -11,20 +11,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
+
+    # 如果你沒有 package.json，可以把這一步刪除
     - name: Install dependencies
       run: npm install
+
     - name: Run update script
       run: node scripts/fetch_scores.js
+
     - name: Commit and push changes
       run: |
         git config user.name "github-actions"
         git config user.email "actions@github.com"
         git add index.html
-        git commit -m "Update scores $(date +'%Y-%m-%d')"
-        git push
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update scores $(date +'%Y-%m-%d')"
+          git push
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
